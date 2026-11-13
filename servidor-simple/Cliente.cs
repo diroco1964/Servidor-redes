@@ -72,7 +72,8 @@ static class Cliente
                 else if (metodo == "POST")
                 {
                     // --- Requisito 6: en POST solo se loguean los datos ---
-                    (codigo, tipo, contenido) = (200, "text/plain", Encoding.UTF8.GetBytes("Datos recibidos."));
+                    (codigo, tipo, contenido) = (200, "text/html; charset=utf-8",
+                        Encoding.UTF8.GetBytes("<h1>Datos recibidos.</h1><a href=\"/\">Volver</a>"));
                 }
                 else
                 {

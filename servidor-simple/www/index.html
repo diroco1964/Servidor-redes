@@ -14,6 +14,20 @@
         <p>Este es un ejemplo de una página HTML con CSS y JavaScript incluidos.</p>
         <img src="imagen.png" alt="Descripción de la imagen">
         <button id="myButton">Haz clic aquí</button>
+
+        <!-- Prueba requisito 7: GET con parámetros en la URL (/?buscar=...) -->
+        <h2>Prueba GET</h2>
+        <form method="get" action="/">
+            <input name="buscar" placeholder="Buscar">
+            <button type="submit">Enviar por GET</button>
+        </form>
+
+        <!-- Prueba requisito 6: POST, los datos viajan en el cuerpo -->
+        <h2>Prueba POST</h2>
+        <form method="post" action="/">
+            <input name="nombre" placeholder="Tu nombre">
+            <button type="submit">Enviar por POST</button>
+        </form>
     </main>
     <script src="script.js"></script>
 </body>
