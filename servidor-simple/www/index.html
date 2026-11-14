@@ -24,11 +24,17 @@
 
         <!-- Prueba requisito 6: POST, los datos viajan en el cuerpo -->
         <h2>Prueba POST</h2>
-        <form method="post" action="/">
+        <form id="formPost" method="post" action="/">
             <input name="nombre" placeholder="Tu nombre">
             <button type="submit">Enviar por POST</button>
         </form>
     </main>
+    <dialog id="modalRecibido">
+        <h2 id="modalTitulo">Datos recibidos</h2>
+        <p id="modalMensaje"></p>
+        <button type="button" id="modalCerrar">Cerrar</button>
+    </dialog>
+
     <script src="script.js"></script>
 </body>
 </html>

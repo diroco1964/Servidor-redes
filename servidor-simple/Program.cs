@@ -20,10 +20,29 @@ servidor.Start();
 Console.WriteLine($"Servidor escuchando en http://localhost:{config.Puerto}");
 Console.WriteLine($"Sirviendo archivos desde: {Archivos.CarpetaWeb}");
 
+// Ctrl+C no mata el proceso de golpe: cancela la espera de conexiones y cierra el listener.
+using var cancelacion = new CancellationTokenSource();
+Console.CancelKeyPress += (_, e) =>
+{
+    e.Cancel = true;
+    cancelacion.Cancel();
+};
+
 // --- Requisito 1: concurrencia ---
 // Cada cliente se atiende en su propia tarea; el bucle vuelve enseguida a aceptar otro.
-while (true)
+try
 {
-    TcpClient cliente = await servidor.AcceptTcpClientAsync();
-    _ = Task.Run(() => Cliente.Atender(cliente));
+    while (true)
+    {
+        TcpClient cliente = await servidor.AcceptTcpClientAsync(cancelacion.Token);
+        _ = Task.Run(() => Cliente.Atender(cliente));
+    }
+}
+catch (OperationCanceledException)
+{
+    Console.WriteLine("Cerrando el servidor...");
+}
+finally
+{
+    servidor.Stop();
 }
