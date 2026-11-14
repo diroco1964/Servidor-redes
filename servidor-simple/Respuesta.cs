@@ -23,8 +23,13 @@ static class Respuesta
         red.Write(contenido);
     }
 
+    static readonly HashSet<string> TiposComprimibles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "text/html", "text/css", "text/javascript", "text/plain", "application/json", "image/svg+xml"
+    };
+
     public static bool EsComprimible(string tipo) =>
-        tipo.StartsWith("text/") || tipo.StartsWith("application/json") || tipo.StartsWith("image/svg+xml");
+        TiposComprimibles.Contains(tipo.Split(';')[0].Trim());
 
     public static byte[] Comprimir(byte[] datos)
     {
