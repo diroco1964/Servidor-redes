@@ -5,11 +5,15 @@ using System.Text;
 // Atiende UNA conexión: lee la solicitud HTTP, arma la respuesta y la envía.
 static class Cliente
 {
+    // Cuántas solicitudes está atendiendo el servidor en este instante (para la demo de concurrencia)
+    static int activas = 0;
+
     public static void Atender(TcpClient cliente)
     {
         using (cliente)
         {
             string ip = ((IPEndPoint)cliente.Client.RemoteEndPoint!).Address.ToString();
+            Interlocked.Increment(ref activas); // varios hilos a la vez: se usa Interlocked, no ++
             try
             {
                 NetworkStream red = cliente.GetStream();
@@ -67,7 +71,18 @@ static class Cliente
 
                 if (metodo == "GET")
                 {
-                    (codigo, tipo, contenido) = Archivos.Buscar(ruta);
+                    // Solo para DEMOSTRAR la concurrencia: /lento tarda 2 segundos en responder
+                    string rutaArchivo = ruta;
+                    if (ruta == "/lento")
+                    {
+                        Thread.Sleep(2000);
+                        rutaArchivo = "/";
+                    }
+
+                    if (ruta == "/estado") // devuelve cuántas hay en curso (sin contarse a sí misma)
+                        (codigo, tipo, contenido) = (200, "text/plain", Encoding.UTF8.GetBytes((activas - 1).ToString()));
+                    else
+                        (codigo, tipo, contenido) = Archivos.Buscar(rutaArchivo);
                 }
                 else if (metodo == "POST")
                 {
@@ -81,7 +96,9 @@ static class Cliente
                 }
 
                 // --- Requisito 8: compresión GZip si el navegador la acepta ---
-                bool usarGzip = encabezados.TryGetValue("Accept-Encoding", out string? enc) && enc.Contains("gzip");
+                bool usarGzip = encabezados.TryGetValue("Accept-Encoding", out string? enc)
+                    && enc.Contains("gzip")
+                    && Respuesta.EsComprimible(tipo);
                 if (usarGzip) contenido = Respuesta.Comprimir(contenido);
 
                 Respuesta.Enviar(red, codigo, tipo, contenido, usarGzip);
@@ -90,11 +107,15 @@ static class Cliente
                 string registro = $"{DateTime.Now:HH:mm:ss} | {ip} | {metodo} {ruta} | {codigo}";
                 if (parametros != "") registro += $" | parámetros: {parametros}";
                 if (metodo == "POST") registro += $" | datos: {cuerpo}";
-                Logger.Escribir(registro);
+                if (ruta != "/estado") Logger.Escribir(registro); // no llenar el log con las consultas de la demo
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[{ip}] Error: {ex.Message}");
+            }
+            finally
+            {
+                Interlocked.Decrement(ref activas);
             }
         }
     }

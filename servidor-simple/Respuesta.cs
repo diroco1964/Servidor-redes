@@ -23,6 +23,9 @@ static class Respuesta
         red.Write(contenido);
     }
 
+    public static bool EsComprimible(string tipo) =>
+        tipo.StartsWith("text/") || tipo.StartsWith("application/json") || tipo.StartsWith("image/svg+xml");
+
     public static byte[] Comprimir(byte[] datos)
     {
         using var salida = new MemoryStream();
